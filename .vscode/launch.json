@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - Main",
+            "request": "launch",
+            "mainClass": "com.example.Main",
+            "projectName": "java-getting-started"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - TransportationProblem",
+            "request": "launch",
+            "mainClass": "com.example.TransportationProblem",
+            "projectName": "java-getting-started"
+        }
+    ]
+}

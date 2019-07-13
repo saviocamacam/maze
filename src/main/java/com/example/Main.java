@@ -16,6 +16,10 @@
 
 package com.example;
 
+import static javax.measure.unit.SI.KILOGRAM;
+import javax.measure.quantity.Mass;
+import org.jscience.physics.model.RelativisticModel;
+import org.jscience.physics.amount.Amount;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +28,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -51,6 +57,28 @@ public class Main {
   @RequestMapping("/")
   String index() {
     return "index";
+  }
+
+  @RequestMapping("/hello")
+  String hello(Map<String, Object> model) {
+    RelativisticModel.select();
+    Amount<Mass> m = Amount.valueOf("12 GeV").to(KILOGRAM);
+    model.put("science", "E=mc^2: 12 GeV = " + m.toString());
+    return "hello";
+  }
+
+  @RequestMapping(value = "/transportation", method = RequestMethod.POST)
+  public Map<String, Object> process(@RequestBody Map<String, Object> payload) throws Exception {
+    // TransportationProblem t = new TransportationProblem();
+    String filename = "src/main/java/com/example/input0.txt";
+    TransportationProblem.updateFile(payload);
+    TransportationProblem.init(filename);
+    TransportationProblem.northWestCornerRule();
+    TransportationProblem.steppingStone();
+    TransportationProblem.printResult(filename);
+    System.out.println(payload.toString());
+    return payload;
+
   }
 
   @RequestMapping("/db")
