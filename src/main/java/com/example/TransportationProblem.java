@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.*;
 
 import org.json.JSONObject;
-import org.json.simple.parser.JSONParser;
+// import org.json.simple.parser.JSONParser;
 
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toCollection;
@@ -199,9 +199,12 @@ public class TransportationProblem {
         }
     }
 
-    static void printResult(String filename) {
+    static Map<String, Object> printResult(String filename) {
         System.out.printf("Optimal solution %s%n%n", filename);
         double totalCosts = 0;
+
+        Map<String, Object> map = new HashMap<>();
+        // map.put("valores", totalCosts);
 
         for (int r = 0; r < supply.length; r++) {
             for (int c = 0; c < demand.length; c++) {
@@ -209,6 +212,7 @@ public class TransportationProblem {
                 Shipment s = matrix[r][c];
                 if (s != null && s.r == r && s.c == c) {
                     System.out.printf(" %3s ", (int) s.quantity);
+                    map.put(s.quantity + "", "{'i':" + s.r + ",'j':" + s.c + "}");
                     totalCosts += (s.quantity * s.costPerUnit);
                 } else
                     System.out.printf("  -  ");
@@ -216,9 +220,12 @@ public class TransportationProblem {
             System.out.println();
         }
         System.out.printf("%nTotal costs: %s%n%n", totalCosts);
+        map.put("total", totalCosts);
+
+        return map;
     }
 
-    static void updateFile(Map content) throws IOException {
+    static void updateFile(Map<String, Object> content) throws IOException {
         System.out.println(content);
         // content.get
         // JSONParser parser = new JSONParser();

@@ -19,6 +19,8 @@ package com.example;
 import static javax.measure.unit.SI.KILOGRAM;
 import javax.measure.quantity.Mass;
 import org.jscience.physics.model.RelativisticModel;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.jscience.physics.amount.Amount;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -27,6 +29,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,7 +42,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @SpringBootApplication
@@ -68,17 +76,19 @@ public class Main {
   }
 
   @RequestMapping(value = "/transportation", method = RequestMethod.POST)
-  public Map<String, Object> process(@RequestBody Map<String, Object> payload) throws Exception {
+  public ResponseEntity<Object> transportation(@RequestBody Map<String, Object> payload) throws Exception {
     // TransportationProblem t = new TransportationProblem();
+
     String filename = "src/main/java/com/example/input0.txt";
     TransportationProblem.updateFile(payload);
     TransportationProblem.init(filename);
     TransportationProblem.northWestCornerRule();
     TransportationProblem.steppingStone();
     TransportationProblem.printResult(filename);
-    System.out.println(payload.toString());
-    return payload;
-
+    // System.out.println(payload.toString());
+    Map<String, Object> a = TransportationProblem.printResult(filename);
+    System.out.println("json " + a.toString());
+    return new ResponseEntity<Object>(a, HttpStatus.OK);
   }
 
   @RequestMapping("/db")
@@ -100,6 +110,36 @@ public class Main {
       model.put("message", e.getMessage());
       return "error";
     }
+  }
+
+  @RequestMapping(value = "/hungarian", method = RequestMethod.POST)
+  public ResponseEntity<Object> hungarian(@RequestBody Map<String, Object> payload) throws Exception {
+    JSONObject pay = new JSONObject(payload);
+    int[][] dataMatrix = new int[pay.getJSONArray("teste").length()][];
+    System.out.println(pay.getJSONArray("teste").length());
+    int index = 0;
+    for (Object var : pay.getJSONArray("teste")) {
+      System.out.println(var);
+      List<String> list = Arrays.asList(var.toString().split(" "));
+      List<Integer> listInt = list.stream().map(s -> Integer.parseInt(s)).collect(Collectors.toList());
+      dataMatrix[index++] = listInt.stream().mapToInt(i -> i).toArray();
+    }
+    HungarianAlgorithm ha = new HungarianAlgorithm(dataMatrix);
+    int[][] assignment = ha.findOptimalAssignment();
+    Map<String, Object> map = new HashMap<>();
+    String value = "";
+    for (int i = 0; i < assignment.length; i++) {
+      for (int j = 0; j < assignment[i].length; j++) {
+        System.out.print(assignment[i][j] + " ");
+        value = value.concat(Integer.toString(assignment[i][j]) + " ");
+      }
+      if (value != "") {
+        map.put(i + "", value);
+        value = "";
+      }
+      System.out.println("");
+    }
+    return new ResponseEntity<Object>(map, HttpStatus.OK);
   }
 
   @Bean
